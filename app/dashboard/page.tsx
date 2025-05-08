@@ -1,17 +1,17 @@
-import { auth } from "@/auth"
 import { Button } from "@/components/ui/button";
 import { logout } from "../actions/auth";
+import { getUser } from "../lib/dal";
 
 export default async function DashboardPage() {
-  const session = await auth();
-  
-  if (!session?.user) {
-    return null;
+  const user = await getUser()
+
+  if (!user) {
+    return null
   }
 
   return (
     <div className="flex flex-col gap-8">
-      <p>{session.user.name}</p>
+      <p>{user.name}</p>
       <form action={logout}>
         <Button type="submit">Logout</Button>
       </form>

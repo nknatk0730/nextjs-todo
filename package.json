@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "bun db/seed/user.ts"
+    "seed": "bun db/seed/todo.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.9.0",
