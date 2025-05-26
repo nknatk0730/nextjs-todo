@@ -16,7 +16,14 @@ export type FormState =
     }
   | undefined
 
-export type signinFormState = 
+export type SigninFormState = 
+  | {
+      error?: string
+      message?: string
+    }
+  | undefined
+
+export type CreateTodoFormState = 
   | {
       error?: string
       message?: string
@@ -55,4 +62,10 @@ export const LoginSchema = z.object({
     message: 'Password is required',
   }).trim(),
   code: z.optional(z.string()),
+});
+
+export const TodoCreateSchema = z.object({
+  title: z.string().min(1, { message: 'Title is required' }).trim(),
+  description: z.string().optional(),
+  ownerEmail: z.string().email({ message: 'Invalid email address' }).trim(),
 });

@@ -1,7 +1,7 @@
 'use server';
 
 import bcrypt from "bcryptjs";
-import { FormState, signinFormState, signupFormSchema } from "../lib/definitions";
+import { FormState, SigninFormState, signupFormSchema } from "../lib/definitions";
 import { db } from "@/db/drizzle";
 import { users } from "@/db/schema";
 import { signIn, signOut } from "@/auth";
@@ -48,20 +48,18 @@ export const signup = async (state: FormState, formData: FormData): Promise<Form
         message: "An error occurred while creating your account.",
       };
     }
-
-    return {
-      message: "User created successfully",
-    };
   } catch (error) {
     console.error("Error creating user:", error);
     return new Error("Error creating user");
   }
+
+  redirect('/login');
 }
 
 export const login = async (
-  state: signinFormState,
+  state: SigninFormState,
   formData: FormData,
-): Promise<signinFormState> => {
+): Promise<SigninFormState> => {
   try {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;

@@ -4,6 +4,8 @@ import {
   integer,
   pgEnum,
   pgTable,
+  timestamp,
+  unique,
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -17,6 +19,11 @@ export const users = pgTable("users", {
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 255 }).notNull(),
   role: rolesEnum().default("user"),
+  emailVerified: timestamp("email_verified", {
+    precision: 3,
+    mode: "date",
+    withTimezone: true,
+  }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -32,6 +39,7 @@ export const todos = pgTable(
     description: varchar({ length: 255 }),
     ownerId: integer("owner_id").references(() => users.id, {
       onDelete: "cascade",
+      onUpdate: "cascade",
     }),
   },
   (table) => [
@@ -57,3 +65,55 @@ function generateUniqueString(length: number = 12): string {
   }
   return uniqueString;
 }
+
+export const emailVerificationTokens = pgTable("email_verification_tokens", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  token: varchar({ length: 64 }).notNull().unique(),
+  email: varchar({ length: 255 }).references(() => users.email, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(), 
+  expiresAt: timestamp("expires_at", { precision: 3, mode: 'date', withTimezone: true }).notNull(),
+},
+  (table) => [
+    unique().on(table.token, table.email),
+    uniqueIndex("email_verification_email_idx").on(table.email),
+    index("email_verification_expires_at_idx").on(table.expiresAt),
+  ]
+);
+
+export const emailVerificationTokensRelations = relations(
+  emailVerificationTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [emailVerificationTokens.email],
+      references: [users.email],
+    }),
+  })
+);
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  token: varchar({ length: 64 }).notNull().unique(),
+  email: varchar({ length: 255 }).references(() => users.email, {
+    onDelete: "cascade",
+    onUpdate: "cascade",
+  }).notNull(),
+  expiresAt: timestamp("expires_at", { precision: 3, mode: 'date', withTimezone: true }).notNull(),
+},
+  (table) => [
+    unique().on(table.token, table.email),
+    uniqueIndex("password_reset_email_idx").on(table.email),
+    index("password_reset_expires_at_idx").on(table.expiresAt),
+  ]
+);
+
+export const passwordResetTokensRelations = relations(
+  passwordResetTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [passwordResetTokens.email],
+      references: [users.email],
+    }),
+  })
+);

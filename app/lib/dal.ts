@@ -2,19 +2,19 @@ import { auth } from '@/auth';
 import { db } from '@/db/drizzle';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { cache } from 'react';
 import 'server-only';
 
-export const getUser = async () => {
+export const getUser = cache(async () => {
   const session = await auth();
-  if (!session?.user) return null
+  if (!session?.user?.email) return null
 
-  const userId = session.user.id as unknown as number
+  const userEmail = session.user.email;
 
   try {
     const data = await db.query.users.findMany({
-      where: eq(users.id, userId),
+      where: eq(users.email, userEmail),
       columns: {
-        id: true,
         name: true,
         age: true,
         email: true,
@@ -38,4 +38,4 @@ export const getUser = async () => {
     console.log(error, 'Failed to fetch user')
     return null
   }
-}
+});
